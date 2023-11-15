@@ -1,0 +1,2133 @@
+[
+    {
+        "id": "2e603573ad544492",
+        "type": "tab",
+        "label": "Project",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ebdc7035e9268fdb",
+        "type": "azureiotdevice",
+        "z": "2e603573ad544492",
+        "deviceid": "1602ki990x5",
+        "pnpModelid": "",
+        "connectiontype": "dps",
+        "authenticationmethod": "sas",
+        "iothub": "tcss573-nazimz.azure-devices.net",
+        "isIotcentral": true,
+        "scopeid": "0ne0097BEF0",
+        "enrollmenttype": "device",
+        "saskey": "e0cds+ImRNCads44JfN7ABtcSIXazmeeQnuf0udFHxQ=",
+        "certname": "",
+        "keyname": "",
+        "passphrase": "",
+        "protocol": "mqtt",
+        "retryInterval": 10,
+        "methods": [],
+        "DPSpayload": "",
+        "gatewayHostname": "",
+        "caname": "",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "x": 1160,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4ccd3d3d3d00030c",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "retrieveUserID",
+        "func": "if (context.get(\"UserID\") === undefined) {\n    context.set(\"UserID\", 0)\n}\nvar counter = context.get(\"UserID\");\ncounter += 1;\nmsg.userID = counter;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1860,
+        "y": 300,
+        "wires": [
+            [
+                "20935b2e62047e06"
+            ]
+        ]
+    },
+    {
+        "id": "8a3add9a49dfe145",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "registerData",
+        "func": "var firstName = msg.fname;\nvar lastName = msg.lname;\nvar username = msg.username;\nvar password = msg.password;\nvar userID = msg.userID;\nvar rfid = msg.rfid;\nvar time = msg.payload;\nmsg.payload = {};\nmsg.payload.firstName = firstName;\nmsg.payload.lastName = lastName;\nmsg.payload.username = username;\nmsg.payload.password = password;\nmsg.payload.userID = userID;\nmsg.payload.rfid = rfid;\nmsg.payload.time = time;\nvar query = \"INSERT INTO User (`firstName`, `lastName`, `username`,\" \n+ \"`password`, `userID`, `rfid`, `timeUpdate`) VALUES (\"\n+ \":firstName, :lastName, :username, :password, :userID, :rfid, :time)\"\nmsg.topic = query;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1850,
+        "y": 420,
+        "wires": [
+            [
+                "98fb10f3bf4f0f12"
+            ]
+        ]
+    },
+    {
+        "id": "20935b2e62047e06",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "generateRFID",
+        "func": "var guidHolder = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';\nvar hex = '0123456789abcdef';\nvar r = 0;\nvar guidResponse = \"\";\nfor (var i = 0; i < 36; i++) {\n    if (guidHolder[i] !== '-' && guidHolder[i] !== '4') {\n        // each x and y needs to be random\n        r = Math.random() * 16 | 0;\n    }\n\n    if (guidHolder[i] === 'x') {\n        guidResponse += hex[r];\n    } else if (guidHolder[i] === 'y') {\n        // clock-seq-and-reserved first hex is filtered and remaining hex values are random\n        r &= 0x3; // bit and with 0011 to set pos 2 to zero ?0??\n        r |= 0x8; // set pos 3 to 1 as 1???\n        guidResponse += hex[r];\n    } else {\n        guidResponse += guidHolder[i];\n    }\n}\nmsg.rfid = guidResponse;\nglobal.set(\"rfid\", msg.rfid);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1860,
+        "y": 340,
+        "wires": [
+            [
+                "c365b96ebd9853e2"
+            ]
+        ]
+    },
+    {
+        "id": "a17d87e55c6d19cd",
+        "type": "ui_form",
+        "z": "2e603573ad544492",
+        "name": "Submit",
+        "label": "",
+        "group": "324394843f61f71b",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "First Name",
+                "value": "fname",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Last Name",
+                "value": "lname",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Username",
+                "value": "username",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Password",
+                "value": "password",
+                "type": "password",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "fname": "",
+            "lname": "",
+            "username": "",
+            "password": ""
+        },
+        "payload": "",
+        "submit": "Submit",
+        "cancel": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 1840,
+        "y": 220,
+        "wires": [
+            [
+                "208395031ead2c65"
+            ]
+        ]
+    },
+    {
+        "id": "9599f0b63350b3e5",
+        "type": "ui_text",
+        "z": "2e603573ad544492",
+        "group": "324394843f61f71b",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Header",
+        "label": "<font size=5>NetBolt",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "x": 1840,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "208395031ead2c65",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "retrieveNames",
+        "func": "var user = msg.payload;\nmsg.fname = user.fname;\nmsg.lname = user.lname;\nmsg.username = user.username;\nmsg.password = user.password;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1860,
+        "y": 260,
+        "wires": [
+            [
+                "4ccd3d3d3d00030c"
+            ]
+        ]
+    },
+    {
+        "id": "c365b96ebd9853e2",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "retrieveTime",
+        "func": "var date = new Date();\nvar hour = date.getHours();\nhour = (hour < 10 ? \"0\" : \"\") + hour;\nvar min = date.getMinutes();\nmin = (min < 10 ? \"0\" : \"\") + min;\n\nvar sec = date.getSeconds();\nsec = (sec < 10 ? \"0\" : \"\") + sec;\nvar year = date.getFullYear();\nvar month = date.getMonth() + 1;\nmonth = (month < 10 ? \"0\" : \"\") + month;\nvar day = date.getDate();\nday = (day < 10 ? \"0\" : \"\") + day;\nmsg.payload = year + \"-\" + month + \"-\" + day + \" \" + hour + \":\" + min + \":\" + sec; \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1850,
+        "y": 380,
+        "wires": [
+            [
+                "8a3add9a49dfe145"
+            ]
+        ]
+    },
+    {
+        "id": "7ccacd562de18d04",
+        "type": "inject",
+        "z": "2e603573ad544492",
+        "name": "Create",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1670,
+        "y": 120,
+        "wires": [
+            [
+                "c2660a8919105d02"
+            ]
+        ]
+    },
+    {
+        "id": "cd5f4652948a677a",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "createDoor",
+        "func": "var time = msg.payload;\nmsg.payload = {\n    status: \"LOCKED\",\n    accessed: time,\n    user: \"\",\n    alert: \"authorized\",\n    log: \"\"\n}\nif (global.get(\"user\") == undefined) {\n    global.set(\"user\", \"\");\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2010,
+        "y": 120,
+        "wires": [
+            [
+                "b0dfb5929a35476b"
+            ]
+        ]
+    },
+    {
+        "id": "b0dfb5929a35476b",
+        "type": "influxdb out",
+        "z": "2e603573ad544492",
+        "influxdb": "5f2d6932c82c3711",
+        "name": "Door",
+        "measurement": "Door",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 2190,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "c6bd4b9ac65bacf0",
+        "type": "grove analog output",
+        "z": "2e603573ad544492",
+        "name": "Buzzer",
+        "board": "9b2c386f6977d97a",
+        "pin": "3",
+        "x": 1120,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "c2660a8919105d02",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "retrieveTime",
+        "func": "var date = new Date();\nvar hour = date.getHours();\nhour = (hour < 10 ? \"0\" : \"\") + hour;\nvar min = date.getMinutes();\nmin = (min < 10 ? \"0\" : \"\") + min;\n\nvar sec = date.getSeconds();\nsec = (sec < 10 ? \"0\" : \"\") + sec;\nvar year = date.getFullYear();\nvar month = date.getMonth() + 1;\nmonth = (month < 10 ? \"0\" : \"\") + month;\nvar day = date.getDate();\nday = (day < 10 ? \"0\" : \"\") + day;\nmsg.payload = year + \"-\" + month + \"-\" + day + \"-\" + hour + \":\" + min + \":\" + sec; \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1830,
+        "y": 120,
+        "wires": [
+            [
+                "cd5f4652948a677a"
+            ]
+        ]
+    },
+    {
+        "id": "98fb10f3bf4f0f12",
+        "type": "mysql",
+        "z": "2e603573ad544492",
+        "mydb": "19e20565b9899490",
+        "name": "NetLock",
+        "x": 1840,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4c1b93cf90a4dc88",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "Previously used to setup database",
+        "info": "",
+        "x": 1920,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "02e95c2ec48c4e3f",
+        "type": "trigger",
+        "z": "2e603573ad544492",
+        "name": "blink",
+        "op1": "10",
+        "op2": "0",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "250",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1110,
+        "y": 640,
+        "wires": [
+            [
+                "c6bd4b9ac65bacf0"
+            ]
+        ]
+    },
+    {
+        "id": "633c379016cd8028",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "azure in",
+        "links": [
+            "0b5397296badc101",
+            "ef78ab4a87abcdec"
+        ],
+        "x": 935,
+        "y": 520,
+        "wires": [
+            [
+                "02e95c2ec48c4e3f",
+                "6c8d648e5e4c3f5b",
+                "ebdc7035e9268fdb"
+            ]
+        ]
+    },
+    {
+        "id": "6c8d648e5e4c3f5b",
+        "type": "influxdb out",
+        "z": "2e603573ad544492",
+        "influxdb": "5f2d6932c82c3711",
+        "name": "Door",
+        "measurement": "Door",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "organisation",
+        "bucket": "bucket",
+        "x": 1110,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "7aba889e2b625b02",
+        "type": "serial in",
+        "z": "2e603573ad544492",
+        "name": "",
+        "serial": "60c9ba003a1e3fe9",
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "18e69ff605af938e"
+            ]
+        ]
+    },
+    {
+        "id": "807d768d22bf58de",
+        "type": "join",
+        "z": "2e603573ad544492",
+        "name": "",
+        "mode": "custom",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": ".5",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 130,
+        "y": 180,
+        "wires": [
+            [
+                "56c8eeaba93704ec"
+            ]
+        ]
+    },
+    {
+        "id": "8f8d415da4a231a8",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "checkRFID",
+        "func": "var rfid = msg.payload;\nvar query = \"SELECT * FROM User WHERE rfid='\" + rfid + \"';\";\nmsg.topic = query;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "f84bce64267902a0"
+            ]
+        ]
+    },
+    {
+        "id": "f84bce64267902a0",
+        "type": "mysql",
+        "z": "2e603573ad544492",
+        "mydb": "19e20565b9899490",
+        "name": "NetLock",
+        "x": 140,
+        "y": 300,
+        "wires": [
+            [
+                "5aa539d8ccc315b7"
+            ]
+        ]
+    },
+    {
+        "id": "5aa539d8ccc315b7",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "checkUser",
+        "func": "var user = msg.payload[0];\nmsg.user = user;\nvar route = 1;\nif (user != null && user != undefined) {\n    route = 2;\n    global.set(\"user\", msg.user);\n}\nmsg.route = route;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 150,
+        "y": 340,
+        "wires": [
+            [
+                "1d8da5827c54f150"
+            ]
+        ]
+    },
+    {
+        "id": "1d8da5827c54f150",
+        "type": "switch",
+        "z": "2e603573ad544492",
+        "name": "isValid",
+        "property": "route",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 350,
+        "y": 280,
+        "wires": [
+            [
+                "7d18c82a9ba87395"
+            ],
+            [
+                "7bd72cc66f233a1e"
+            ]
+        ]
+    },
+    {
+        "id": "1d8afed8980e11a8",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "sendSuccess",
+        "func": "var date = new Date()\ndate.setHours(date.getHours() - 8); //Modify date so toISOString does not output GMT timezone\nvar dateString = date.toISOString().replace(\"T\", \" \").replace(\"Z\", \"\");\n\nif (global.get(\"isLocked\")){\n    var logval = \"locked\"\n    var status = \"LOCKED\" \n} else {\n    var logval = \"unlocked\"\n    var status = \"UNLOCKED\" \n}\n\nvar user = msg.user;\nmsg.payload = {\n    status: status,\n    accessed: dateString,\n    user: user.firstName + \" \" + user.lastName,\n    alert: \"authorized\",\n    log: \"Bolt \" + logval + \" by \" + user.firstName + \" \" + user.lastName + \" at \" + dateString\n}\nmsg.topic = \"telemetry\";\nglobal.set(\"time\", dateString);\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 320,
+        "wires": [
+            [
+                "a9b70d0222b93475",
+                "0b5397296badc101"
+            ]
+        ]
+    },
+    {
+        "id": "9ad56f7c3f0ab51e",
+        "type": "grove digital output",
+        "z": "2e603573ad544492",
+        "name": "Green",
+        "board": "9b2c386f6977d97a",
+        "pin": "2",
+        "x": 690,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "a9b70d0222b93475",
+        "type": "trigger",
+        "z": "2e603573ad544492",
+        "name": "blink",
+        "op1": "1",
+        "op2": "0",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "250",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 690,
+        "y": 360,
+        "wires": [
+            [
+                "9ad56f7c3f0ab51e"
+            ]
+        ]
+    },
+    {
+        "id": "0b5397296badc101",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "azure out",
+        "mode": "link",
+        "links": [
+            "633c379016cd8028"
+        ],
+        "x": 860,
+        "y": 140,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "7d18c82a9ba87395",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "rejectUser",
+        "func": "var date = new Date()\ndate.setHours(date.getHours() - 8); //Modify date so toISOString does not output GMT timezone\nvar dateString = date.toISOString().replace(\"T\", \" \").replace(\"Z\", \"\");\n\n\nif (global.get(\"isLocked\")) {\n    var status = \"LOCKED\"\n} else {\n    var status = \"UNLOCKED\"\n}\n\nmsg.payload = {\n    status: status,\n    accessed: dateString,\n    user: \"N/A\",\n    alert: \"unauthorized\",\n    log: \"Invalid ID detected at\" + dateString\n}\nmsg.topic = \"telemetry\";\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 140,
+        "wires": [
+            [
+                "229122cda7ea2cb9",
+                "0b5397296badc101"
+            ]
+        ]
+    },
+    {
+        "id": "95d4a63e0e75d9e0",
+        "type": "grove digital output",
+        "z": "2e603573ad544492",
+        "name": "Red",
+        "board": "9b2c386f6977d97a",
+        "pin": "6",
+        "x": 550,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "229122cda7ea2cb9",
+        "type": "trigger",
+        "z": "2e603573ad544492",
+        "name": "blink",
+        "op1": "1",
+        "op2": "0",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "250",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 550,
+        "y": 180,
+        "wires": [
+            [
+                "95d4a63e0e75d9e0"
+            ]
+        ]
+    },
+    {
+        "id": "3aa6851ee92b89e4",
+        "type": "ui_form",
+        "z": "2e603573ad544492",
+        "name": "Login Page",
+        "label": "Welcome, User.",
+        "group": "6933f97ce4d13908",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Username",
+                "value": "username",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Password",
+                "value": "password",
+                "type": "password",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "username": "",
+            "password": ""
+        },
+        "payload": "",
+        "submit": "submit",
+        "cancel": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 190,
+        "y": 640,
+        "wires": [
+            [
+                "19729014f4e5ad13"
+            ]
+        ]
+    },
+    {
+        "id": "19729014f4e5ad13",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "formatLoginQuery",
+        "func": "var user = msg.payload;\nvar username = JSON.stringify(user.username);\nvar password = JSON.stringify(user.password);\nvar query = \"SELECT * FROM USER WHERE `username` = \" + username + \" AND `password` = \" + password;  \nmsg.topic = query;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 210,
+        "y": 680,
+        "wires": [
+            [
+                "fbb3feebe7c98ff6"
+            ]
+        ]
+    },
+    {
+        "id": "fbb3feebe7c98ff6",
+        "type": "mysql",
+        "z": "2e603573ad544492",
+        "mydb": "19e20565b9899490",
+        "name": "NetLock",
+        "x": 180,
+        "y": 720,
+        "wires": [
+            [
+                "e3b6180145a22843"
+            ]
+        ]
+    },
+    {
+        "id": "e3b6180145a22843",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "checkUser",
+        "func": "var user = msg.payload[0];\nmsg.user = user;\nvar route = 1;\nif (user != null && user != undefined) {\n    global.set(\"user\", msg.user);\n    route = 2;\n}\nmsg.route = route;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 190,
+        "y": 760,
+        "wires": [
+            [
+                "4c137e18dfb2f040"
+            ]
+        ]
+    },
+    {
+        "id": "4c137e18dfb2f040",
+        "type": "switch",
+        "z": "2e603573ad544492",
+        "name": "isValid",
+        "property": "route",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 350,
+        "y": 760,
+        "wires": [
+            [
+                "db7f8010d1b44ed4"
+            ],
+            [
+                "01fa8d095fde0bd6"
+            ]
+        ]
+    },
+    {
+        "id": "9ea3a76f01746bc4",
+        "type": "ui_ui_control",
+        "z": "2e603573ad544492",
+        "name": "showDashboard",
+        "events": "all",
+        "x": 1000,
+        "y": 1220,
+        "wires": [
+            [
+                "0c9c8dd33c47e190",
+                "e112585888aca338"
+            ]
+        ]
+    },
+    {
+        "id": "0ba7efdfb0bdd192",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "enableDashboard",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"tab\":\"Controls\",\"tabs\":{\"enable\":[\"Controls\"],\"disable\":[\"LogIn\"]},\"group\":{\"hide\":[\"Log In\"],\"show\":\"Status\"}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1010,
+        "y": 1180,
+        "wires": [
+            [
+                "9ea3a76f01746bc4"
+            ]
+        ]
+    },
+    {
+        "id": "25dd52d49c6be53e",
+        "type": "ui_switch",
+        "z": "2e603573ad544492",
+        "name": "",
+        "label": "Bolt Engaged?",
+        "tooltip": "",
+        "group": "4f7c9c2ab95a76ab",
+        "order": 0,
+        "width": "0",
+        "height": "0",
+        "passthru": false,
+        "decouple": "true",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 380,
+        "y": 1440,
+        "wires": [
+            [
+                "953e78493717436c"
+            ]
+        ]
+    },
+    {
+        "id": "0c9c8dd33c47e190",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "logOut",
+        "func": "if (msg.payload == \"connect\"){\n    msg.payload = {\n        \"tab\": \"LogIn\",\n        \"tabs\" : {\"disable\": [\"Controls\"], \n                  \"enable\": [\"LogIn\"]\n                  },\n        \"group\" : {\"hide\": [\"LogIn_Status\"]}\n    }\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 1260,
+        "wires": [
+            [
+                "9ea3a76f01746bc4"
+            ]
+        ]
+    },
+    {
+        "id": "93f873e287f30b51",
+        "type": "ui_button",
+        "z": "2e603573ad544492",
+        "name": "LogOutButton",
+        "group": "807c320ea38c1c0b",
+        "order": 1,
+        "width": "0",
+        "height": "0",
+        "passthru": false,
+        "label": "Log Out",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "connect",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 780,
+        "y": 1260,
+        "wires": [
+            [
+                "0c9c8dd33c47e190"
+            ]
+        ]
+    },
+    {
+        "id": "a5e51d9e8dfb91ed",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "toggleLockIn",
+        "links": [
+            "953e78493717436c",
+            "7bd72cc66f233a1e"
+        ],
+        "x": 210,
+        "y": 1500,
+        "wires": [
+            [
+                "88b3736a23937cc5"
+            ]
+        ],
+        "l": true
+    },
+    {
+        "id": "98b7f68c3ddae5fa",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "checkIsLocked",
+        "func": "var isLocked = global.get(\"isLocked\");\n\nisLocked = !isLocked;\nglobal.set(\"isLocked\", isLocked);\n\nmsg.payload = isLocked;\nmsg.user = global.get(\"user\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nvar isLocked = false;\nglobal.set(\"isLocked\", isLocked);\n\nmsg = {\n    \"payload\": isLocked\n}\nreturn msg;",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 1560,
+        "wires": [
+            [
+                "fca873e8a9e8229f",
+                "067b0786c4a827cd"
+            ]
+        ]
+    },
+    {
+        "id": "88b3736a23937cc5",
+        "type": "delay",
+        "z": "2e603573ad544492",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 400,
+        "y": 1500,
+        "wires": [
+            [
+                "98b7f68c3ddae5fa"
+            ]
+        ]
+    },
+    {
+        "id": "fca873e8a9e8229f",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "toggleLock return",
+        "mode": "link",
+        "links": [
+            "6dd85f8f03c7138a",
+            "8aadb9b9bd36f7e1"
+        ],
+        "x": 630,
+        "y": 1560,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "10dd7b41efd9128a",
+        "type": "exec",
+        "z": "2e603573ad544492",
+        "command": "python3 /home/pi/lockctl.py ",
+        "addpay": "payload",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "Bolt Actuator",
+        "x": 390,
+        "y": 1640,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "067b0786c4a827cd",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "setLock",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "true",
+                "fromt": "bool",
+                "to": "lock",
+                "tot": "str"
+            },
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "false",
+                "fromt": "bool",
+                "to": "unlock",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 1600,
+        "wires": [
+            [
+                "10dd7b41efd9128a"
+            ]
+        ]
+    },
+    {
+        "id": "6dd85f8f03c7138a",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "lockToggled",
+        "links": [
+            "fca873e8a9e8229f"
+        ],
+        "x": 235,
+        "y": 1440,
+        "wires": [
+            [
+                "25dd52d49c6be53e"
+            ]
+        ]
+    },
+    {
+        "id": "953e78493717436c",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "toggleLock Call",
+        "mode": "link",
+        "links": [
+            "a5e51d9e8dfb91ed"
+        ],
+        "x": 535,
+        "y": 1440,
+        "wires": []
+    },
+    {
+        "id": "8aadb9b9bd36f7e1",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "lockToggled",
+        "links": [
+            "fca873e8a9e8229f"
+        ],
+        "x": 555,
+        "y": 320,
+        "wires": [
+            [
+                "1d8afed8980e11a8"
+            ]
+        ]
+    },
+    {
+        "id": "7bd72cc66f233a1e",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "toggleLock Call",
+        "mode": "link",
+        "links": [
+            "a5e51d9e8dfb91ed"
+        ],
+        "x": 475,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "e2347fd74c37028a",
+        "type": "ui_text",
+        "z": "2e603573ad544492",
+        "group": "4f7c9c2ab95a76ab",
+        "order": 0,
+        "width": "9",
+        "height": "2",
+        "name": "display User Info",
+        "label": "User Info",
+        "format": "User: {{msg.payload.username}}<br>Name: {{msg.payload.name}}<br>RFID: {{msg.payload.rfid}}",
+        "layout": "col-center",
+        "className": "",
+        "x": 490,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "005fc7698f0a00ce",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "prepareUserInfo",
+        "func": "var user = global.get(\"user\");\nvar username = user.username;\nvar name = user.firstName + \" \" + user.lastName;\nvar rfid = user.rfid;\n\nmsg.payload = {\n    username: username,\n    name: name,\n    rfid: rfid\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 1180,
+        "wires": [
+            [
+                "e2347fd74c37028a"
+            ]
+        ]
+    },
+    {
+        "id": "ec2b88b708a8e88a",
+        "type": "ui_button",
+        "z": "2e603573ad544492",
+        "name": "",
+        "group": "f42301acc402513d",
+        "order": 0,
+        "width": "0",
+        "height": "0",
+        "passthru": false,
+        "label": "Change RFID key",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "{\"group\":{\"show\":[\"Controls_New_RFID\"],\"hide\":[\"Controls_ChangeRFIDButton\"]}}",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 370,
+        "y": 2000,
+        "wires": [
+            [
+                "7e569ddaea1a04ee",
+                "0d2a329797af079a",
+                "1718c27fa596a4c9",
+                "03894cd31f6465ed",
+                "4da6ac7f527bd082",
+                "cad2c3b15cc490ae",
+                "b485b2737aa9eac3"
+            ]
+        ]
+    },
+    {
+        "id": "d52a566c5bb7795f",
+        "type": "ui_toast",
+        "z": "2e603573ad544492",
+        "position": "bottom right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "accessDeniedNotif",
+        "x": 570,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "db7f8010d1b44ed4",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "textActivate",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Access Denied, Try again.",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 550,
+        "y": 660,
+        "wires": [
+            [
+                "d52a566c5bb7795f"
+            ]
+        ]
+    },
+    {
+        "id": "7e569ddaea1a04ee",
+        "type": "ui_ui_control",
+        "z": "2e603573ad544492",
+        "name": "showNewRFIDDialog",
+        "events": "change",
+        "x": 800,
+        "y": 1880,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "087bd26e22697810",
+        "type": "ui_text",
+        "z": "2e603573ad544492",
+        "group": "fb5f3c4c78d0ea4d",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Current RFID:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "x": 780,
+        "y": 2000,
+        "wires": []
+    },
+    {
+        "id": "26be754c6f530496",
+        "type": "ui_text",
+        "z": "2e603573ad544492",
+        "group": "fb5f3c4c78d0ea4d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "New RFID:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "x": 770,
+        "y": 2100,
+        "wires": []
+    },
+    {
+        "id": "0d2a329797af079a",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "currentRFID Text",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "user.rfid",
+                "tot": "global"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 790,
+        "y": 1960,
+        "wires": [
+            [
+                "087bd26e22697810"
+            ]
+        ]
+    },
+    {
+        "id": "1718c27fa596a4c9",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "newRFID Text Reset",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 800,
+        "y": 2060,
+        "wires": [
+            [
+                "26be754c6f530496"
+            ]
+        ]
+    },
+    {
+        "id": "10ebec568cb81f10",
+        "type": "grove digital output",
+        "z": "2e603573ad544492",
+        "name": "Red",
+        "board": "9b2c386f6977d97a",
+        "pin": "6",
+        "x": 750,
+        "y": 2500,
+        "wires": []
+    },
+    {
+        "id": "03894cd31f6465ed",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "lightOn",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "1",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 760,
+        "y": 2460,
+        "wires": [
+            [
+                "10ebec568cb81f10"
+            ]
+        ]
+    },
+    {
+        "id": "4da6ac7f527bd082",
+        "type": "trigger",
+        "z": "2e603573ad544492",
+        "name": "blink",
+        "op1": "10",
+        "op2": "0",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "250",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 750,
+        "y": 2360,
+        "wires": [
+            [
+                "c5ee2747dbd12120"
+            ]
+        ]
+    },
+    {
+        "id": "c5ee2747dbd12120",
+        "type": "grove analog output",
+        "z": "2e603573ad544492",
+        "name": "Buzzer",
+        "board": "9b2c386f6977d97a",
+        "pin": "3",
+        "x": 760,
+        "y": 2400,
+        "wires": []
+    },
+    {
+        "id": "929ed4a7b9f8f7b4",
+        "type": "serial in",
+        "z": "2e603573ad544492",
+        "name": "",
+        "serial": "60c9ba003a1e3fe9",
+        "x": 330,
+        "y": 2260,
+        "wires": [
+            [
+                "e6b260ca7b6063bf"
+            ]
+        ]
+    },
+    {
+        "id": "20d59687077af692",
+        "type": "switch",
+        "z": "2e603573ad544492",
+        "name": "allowNewRFID",
+        "property": "newRFID",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 340,
+        "y": 2340,
+        "wires": [
+            [
+                "d3cc1e6e83de6ad1"
+            ]
+        ]
+    },
+    {
+        "id": "cad2c3b15cc490ae",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "waitingForNewRFID",
+        "rules": [
+            {
+                "t": "set",
+                "p": "newRFID",
+                "pt": "global",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 2120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "18e69ff605af938e",
+        "type": "switch",
+        "z": "2e603573ad544492",
+        "name": "rejectWhenNewRFID",
+        "property": "newRFID",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 180,
+        "y": 140,
+        "wires": [
+            [
+                "807d768d22bf58de"
+            ]
+        ]
+    },
+    {
+        "id": "d3cc1e6e83de6ad1",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "stopWaiting",
+        "rules": [
+            {
+                "t": "set",
+                "p": "newRFID",
+                "pt": "global",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 330,
+        "y": 2380,
+        "wires": [
+            [
+                "26be754c6f530496",
+                "4da6ac7f527bd082",
+                "67192272b4e1e9f4",
+                "05a6062cb02b12de"
+            ]
+        ]
+    },
+    {
+        "id": "67192272b4e1e9f4",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "lightOff",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 2500,
+        "wires": [
+            [
+                "10ebec568cb81f10"
+            ]
+        ]
+    },
+    {
+        "id": "8ea960eaca421fc8",
+        "type": "ui_button",
+        "z": "2e603573ad544492",
+        "name": "",
+        "group": "fb5f3c4c78d0ea4d",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Confirm",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 760,
+        "y": 2220,
+        "wires": [
+            [
+                "5cb1bebeeeccad14"
+            ]
+        ]
+    },
+    {
+        "id": "667f4230c82ee806",
+        "type": "ui_button",
+        "z": "2e603573ad544492",
+        "name": "",
+        "group": "fb5f3c4c78d0ea4d",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "label": "Cancel",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Red",
+        "className": "",
+        "icon": "",
+        "payload": "{\"group\":{\"hide\":[\"Controls_New_RFID\"],\"show\":[\"Controls_ChangeRFIDButton\"]}}",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 760,
+        "y": 1840,
+        "wires": [
+            [
+                "7e569ddaea1a04ee",
+                "626745d4134a2af6"
+            ]
+        ]
+    },
+    {
+        "id": "b485b2737aa9eac3",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "disableButton",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "enabled",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 360,
+        "y": 2040,
+        "wires": [
+            [
+                "8ea960eaca421fc8",
+                "ec2b88b708a8e88a"
+            ]
+        ]
+    },
+    {
+        "id": "05a6062cb02b12de",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "enableConfirm",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "topic",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "enabled",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 2180,
+        "wires": [
+            [
+                "8ea960eaca421fc8"
+            ]
+        ]
+    },
+    {
+        "id": "5cb1bebeeeccad14",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "finalizeRFID",
+        "rules": [
+            {
+                "t": "set",
+                "p": "user.rfid",
+                "pt": "global",
+                "to": "topic",
+                "tot": "msg"
+            },
+            {
+                "t": "move",
+                "p": "topic",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 770,
+        "y": 2260,
+        "wires": [
+            [
+                "7f84198a97b6c61d",
+                "9bc4cb36ef73cb9d",
+                "7e35721356ccba65"
+            ]
+        ]
+    },
+    {
+        "id": "7f84198a97b6c61d",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "sendRFID",
+        "mode": "link",
+        "links": [
+            "0ff0f2d58dd479dd",
+            "0790d6a53bc99469"
+        ],
+        "x": 1000,
+        "y": 2200,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "0ff0f2d58dd479dd",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "refresh user details",
+        "links": [
+            "7f84198a97b6c61d",
+            "01fa8d095fde0bd6"
+        ],
+        "x": 270,
+        "y": 1180,
+        "wires": [
+            [
+                "005fc7698f0a00ce"
+            ]
+        ],
+        "l": true
+    },
+    {
+        "id": "9bc4cb36ef73cb9d",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "sendRFIDUpdate",
+        "func": "var date = new Date()\ndate.setHours(date.getHours() - 8); //Modify date so toISOString does not output GMT timezone\nvar dateString = date.toISOString().replace(\"T\", \" \").replace(\"Z\", \"\");\n\nvar user = global.get(\"user\");\nmsg.payload = {\n    status: \"UNCHANGED\",\n    accessed: dateString,\n    user: user.firstName + \" \" + user.lastName,\n    alert: \"authorized\",\n    log: \"User \"+ user.firstName + \" \" + user.lastName + \" changed associated RFID to \" + msg.payload\n}\n\nmsg.topic = \"telemetry\";\nglobal.set(\"time\", dateString);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 2360,
+        "wires": [
+            [
+                "ef78ab4a87abcdec"
+            ]
+        ]
+    },
+    {
+        "id": "626745d4134a2af6",
+        "type": "change",
+        "z": "2e603573ad544492",
+        "name": "enableButton",
+        "rules": [
+            {
+                "t": "set",
+                "p": "enabled",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1030,
+        "y": 1860,
+        "wires": [
+            [
+                "ec2b88b708a8e88a"
+            ]
+        ]
+    },
+    {
+        "id": "ef78ab4a87abcdec",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "azure out",
+        "mode": "link",
+        "links": [
+            "633c379016cd8028"
+        ],
+        "x": 1240,
+        "y": 2360,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "7e35721356ccba65",
+        "type": "function",
+        "z": "2e603573ad544492",
+        "name": "formatRFIDUpdateQuery",
+        "func": "var user = global.get(\"user\");\nvar username = user.username;\nvar password = user.password;\nvar query = \"UPDATE USER SET rfid = '\" + msg.payload + \"' WHERE username = '\" + username + \"' AND password = '\" + password + \"';\";  \nmsg.topic = query;\nreturn msg;\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 2260,
+        "wires": [
+            [
+                "6d62bf1867c9e36e"
+            ]
+        ]
+    },
+    {
+        "id": "6d62bf1867c9e36e",
+        "type": "mysql",
+        "z": "2e603573ad544492",
+        "mydb": "19e20565b9899490",
+        "name": "NetLock",
+        "x": 1020,
+        "y": 2300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e6b260ca7b6063bf",
+        "type": "join",
+        "z": "2e603573ad544492",
+        "name": "",
+        "mode": "custom",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": ".5",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 310,
+        "y": 2300,
+        "wires": [
+            [
+                "20d59687077af692"
+            ]
+        ]
+    },
+    {
+        "id": "0790d6a53bc99469",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "resetNewRFID",
+        "links": [
+            "7f84198a97b6c61d",
+            "e112585888aca338"
+        ],
+        "x": 635,
+        "y": 1840,
+        "wires": [
+            [
+                "667f4230c82ee806"
+            ]
+        ]
+    },
+    {
+        "id": "e112585888aca338",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "link out 1",
+        "mode": "link",
+        "links": [
+            "3795020556386ad8",
+            "0790d6a53bc99469"
+        ],
+        "x": 1185,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "81094eecd47827ea",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "RFID Scan to Open Lock",
+        "info": "",
+        "x": 570,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "da3d5095db6c25b7",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "Login Page Behavior",
+        "info": "",
+        "x": 410,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "01fa8d095fde0bd6",
+        "type": "link out",
+        "z": "2e603573ad544492",
+        "name": "access granted",
+        "mode": "link",
+        "links": [
+            "d426eae7e1de4249",
+            "0ff0f2d58dd479dd"
+        ],
+        "x": 540,
+        "y": 800,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "d426eae7e1de4249",
+        "type": "link in",
+        "z": "2e603573ad544492",
+        "name": "link in 1",
+        "links": [
+            "01fa8d095fde0bd6"
+        ],
+        "x": 885,
+        "y": 1180,
+        "wires": [
+            [
+                "0ba7efdfb0bdd192"
+            ]
+        ]
+    },
+    {
+        "id": "58dc4499502cbd28",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "Dashboard functionality",
+        "info": "",
+        "x": 700,
+        "y": 1080,
+        "wires": []
+    },
+    {
+        "id": "b9fb8b3d036a1c0c",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "Locking/Unlocking the bolt",
+        "info": "",
+        "x": 390,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "7863c6b1c02d3d7d",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "Update RFID by scanning new tag",
+        "info": "",
+        "x": 400,
+        "y": 1860,
+        "wires": []
+    },
+    {
+        "id": "3845049118dfcdb6",
+        "type": "comment",
+        "z": "2e603573ad544492",
+        "name": "Output to Influx, Azure dashboard",
+        "info": "",
+        "x": 1150,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "56c8eeaba93704ec",
+        "type": "delay",
+        "z": "2e603573ad544492",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "2",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 160,
+        "y": 220,
+        "wires": [
+            [
+                "8f8d415da4a231a8"
+            ]
+        ]
+    },
+    {
+        "id": "324394843f61f71b",
+        "type": "ui_group",
+        "name": "Default",
+        "tab": "38ebb5027ea35e82",
+        "order": 1,
+        "disp": false,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "5f2d6932c82c3711",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "NetLock",
+        "name": "NetLock-ds",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "1.x",
+        "url": "http://localhost:8086",
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "9b2c386f6977d97a",
+        "type": "board-config",
+        "board": "GrovePi"
+    },
+    {
+        "id": "19e20565b9899490",
+        "type": "MySQLdatabase",
+        "name": "NetLock",
+        "host": "netlock.mysql.database.azure.com",
+        "port": "3306",
+        "db": "netlock",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "60c9ba003a1e3fe9",
+        "type": "serial-port",
+        "serialport": "/dev/serial0",
+        "serialbaud": "9600",
+        "databits": "8",
+        "parity": "none",
+        "stopbits": "1",
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "10",
+        "bin": "false",
+        "out": "interbyte",
+        "addchar": "",
+        "responsetimeout": "10000"
+    },
+    {
+        "id": "6933f97ce4d13908",
+        "type": "ui_group",
+        "name": "Log In",
+        "tab": "8440dd38a473bbc5",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "4f7c9c2ab95a76ab",
+        "type": "ui_group",
+        "name": "Lock Controls",
+        "tab": "77021339b84445fd",
+        "order": 2,
+        "disp": true,
+        "width": "9",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "807c320ea38c1c0b",
+        "type": "ui_group",
+        "name": "LogOut",
+        "tab": "77021339b84445fd",
+        "order": 2,
+        "disp": false,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "f42301acc402513d",
+        "type": "ui_group",
+        "name": "ChangeRFIDButton",
+        "tab": "77021339b84445fd",
+        "order": 3,
+        "disp": false,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "fb5f3c4c78d0ea4d",
+        "type": "ui_group",
+        "name": "New RFID",
+        "tab": "77021339b84445fd",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "38ebb5027ea35e82",
+        "type": "ui_tab",
+        "d": true,
+        "name": "NetBolt",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "8440dd38a473bbc5",
+        "type": "ui_tab",
+        "name": "LogIn",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "77021339b84445fd",
+        "type": "ui_tab",
+        "name": "Controls",
+        "icon": "dashboard",
+        "disabled": true,
+        "hidden": false
+    }
+]
